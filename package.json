@@ -17,7 +17,7 @@
   },
   "build": {
     "appId": "com.mewworld.radio247",
-    "productName": "Radio 247",
+    "productName": "MewWorld",
     "directories": {
       "output": "dist"
     },
@@ -46,7 +46,7 @@
       "installerHeaderIcon": "icon.ico",
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Radio 24/7"
+      "shortcutName": "MewWorld"
     },
     "publish": {
       "provider": "github",
