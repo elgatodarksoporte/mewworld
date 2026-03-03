@@ -451,6 +451,60 @@ ipcMain.on('toggle-always-on-top', () => {
   }
 });
 
+// ==================== SONG DOWNLOAD ====================
+
+ipcMain.handle('download-song', async (event, { url, filename }) => {
+  if (!mainWindow || !url) return { success: false, error: 'Invalid request' };
+
+  const downloadsPath = app.getPath('downloads');
+  const safeName = (filename || 'song.mp3').replace(/[<>:"/\\|?*]/g, '_');
+
+  return new Promise((resolve) => {
+    const ses = mainWindow.webContents.session;
+
+    const willDownloadHandler = (e, item) => {
+      item.setSavePath(path.join(downloadsPath, safeName));
+
+      item.on('updated', (_, state) => {
+        if (state === 'progressing' && !item.isPaused()) {
+          const received = item.getReceivedBytes();
+          const total = item.getTotalBytes();
+          const percent = total > 0 ? Math.round((received / total) * 100) : 0;
+          mainWindow.webContents.send('download-progress', {
+            filename: safeName,
+            percent,
+            received,
+            total,
+            state: 'downloading',
+          });
+        }
+      });
+
+      item.once('done', (_, state) => {
+        ses.removeListener('will-download', willDownloadHandler);
+        if (state === 'completed') {
+          showNotification('Descarga completada', `${safeName} guardado en Descargas`);
+          mainWindow.webContents.send('download-progress', {
+            filename: safeName,
+            percent: 100,
+            state: 'completed',
+          });
+          resolve({ success: true, path: item.getSavePath() });
+        } else {
+          mainWindow.webContents.send('download-progress', {
+            filename: safeName,
+            state: 'failed',
+          });
+          resolve({ success: false, error: `Download ${state}` });
+        }
+      });
+    };
+
+    ses.on('will-download', willDownloadHandler);
+    mainWindow.webContents.downloadURL(url);
+  });
+});
+
 // ==================== APP LIFECYCLE ====================
 
 app.whenReady().then(() => {
