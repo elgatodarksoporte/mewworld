@@ -2,6 +2,8 @@
   "name": "radio-247",
   "version": "1.0.0",
   "description": "Radio 24/7 - Desktop App",
+  "repository": "https://github.com/Elgato-dark/radio-247",
+  "author": "Elgato-dark",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
