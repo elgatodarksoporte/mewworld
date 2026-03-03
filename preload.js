@@ -12,13 +12,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Always on top
   toggleAlwaysOnTop: () => ipcRenderer.send('toggle-always-on-top'),
 
-  // Song download
-  downloadSong: (url, filename) => ipcRenderer.invoke('download-song', { url, filename }),
-  onDownloadProgress: (callback) => {
-    const handler = (_, data) => callback(data);
-    ipcRenderer.on('download-progress', handler);
-    return () => ipcRenderer.removeListener('download-progress', handler);
-  },
+  // Title bar color (sync with theme)
+  updateTitleBar: (color, symbolColor) => ipcRenderer.send('update-titlebar', { color, symbolColor }),
 
   // Platform detection
   isElectron: true,

@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  id-token: write
 
 jobs:
   build:
@@ -25,25 +26,37 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Electron app
+      - name: Build Electron app (unsigned)
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload artifacts
+      - name: Upload unsigned artifact
+        id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
+          name: unsigned-installer
           path: |
             dist/*.exe
-            dist/latest.yml
-            dist/*.blockmap
 
-      - name: Create GitHub Release
+      - name: Submit to SignPath for signing
+        id: signpath
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: "336158b9-4f3e-4aa5-b122-2f13e83430c9"
+          project-slug: "elgato_wed"
+          signing-policy-slug: "elgato_wed"
+          artifact-configuration-slug: "nsis_installer"
+          github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: ./signed
+
+      - name: Create GitHub Release with signed installer
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/*.exe
+            signed/*.exe
             dist/latest.yml
             dist/*.blockmap
           generate_release_notes: true
