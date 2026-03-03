@@ -1,7 +1,7 @@
 {
-  "name": "radio-247",
-  "version": "1.2.7",
-  "description": "Radio 24/7 - Desktop App",
+  "name": "mewworld",
+  "version": "1.2.8",
+  "description": "MewWorld - Desktop App",
   "repository": "https://github.com/elgatodarksoporte/mewworld",
   "author": "elgatodarksoporte",
   "main": "main.js",
@@ -16,7 +16,7 @@
     "sharp": "^0.34.5"
   },
   "build": {
-    "appId": "com.mewworld.radio247",
+    "appId": "com.mewworld.app",
     "productName": "MewWorld",
     "directories": {
       "output": "dist"
