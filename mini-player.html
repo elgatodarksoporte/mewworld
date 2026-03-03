@@ -88,12 +88,16 @@
     </div>
   </div>
   <script>
-    const { ipcRenderer } = require('electron');
     document.getElementById('btn-expand').addEventListener('click', () => {
       window.electronAPI.expandWindow();
     });
     document.getElementById('btn-close').addEventListener('click', () => {
       window.electronAPI.closeMiniPlayer();
+    });
+    // Listen for song updates from main process
+    window.electronAPI.onSongUpdate((data) => {
+      if (data.title) document.getElementById('song-title').textContent = data.title;
+      if (data.artist) document.getElementById('song-artist').textContent = data.artist;
     });
   </script>
 </body>

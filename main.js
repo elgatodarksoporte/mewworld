@@ -3,13 +3,18 @@ const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 
+const DiscordRPC = require('discord-rpc');
+
 const APP_URL = 'https://mewworld.net/inicio';
 const APP_DOMAIN = 'mewworld.net';
+const DISCORD_CLIENT_ID = '1472533119881052222';
 
 let mainWindow = null;
 let splashWindow = null;
 let miniPlayerWindow = null;
 let tray = null;
+let rpcClient = null;
+let rpcReady = false;
 
 // ==================== SETTINGS ====================
 
@@ -259,6 +264,17 @@ function createTray() {
       label: 'Mini Player',
       click: () => createMiniPlayer(),
     },
+    {
+      label: 'Siempre visible',
+      type: 'checkbox',
+      checked: false,
+      click: (menuItem) => {
+        if (mainWindow) {
+          mainWindow.setAlwaysOnTop(menuItem.checked);
+          mainWindow.show();
+        }
+      },
+    },
     { type: 'separator' },
     {
       label: 'Recargar',
@@ -371,6 +387,70 @@ function registerShortcuts() {
   });
 }
 
+// ==================== DISCORD RICH PRESENCE ====================
+
+function connectDiscordRPC() {
+  rpcClient = new DiscordRPC.Client({ transport: 'ipc' });
+
+  rpcClient.on('ready', () => {
+    rpcReady = true;
+    updatePresence();
+    // Update presence every 30 seconds (to refresh elapsed time)
+    setInterval(updatePresence, 30000);
+  });
+
+  rpcClient.login({ clientId: DISCORD_CLIENT_ID }).catch(() => {
+    // Discord not running, retry in 30 seconds
+    rpcReady = false;
+    setTimeout(connectDiscordRPC, 30000);
+  });
+
+  rpcClient.on('disconnected', () => {
+    rpcReady = false;
+    setTimeout(connectDiscordRPC, 30000);
+  });
+}
+
+function updatePresence(songTitle, songArtist) {
+  if (!rpcReady || !rpcClient) return;
+  try {
+    const activity = {
+      details: songTitle || 'Radio 24/7',
+      state: songArtist || 'Escuchando musica',
+      startTimestamp: Math.floor(Date.now() / 1000),
+      largeImageKey: 'radio_icon',
+      largeImageText: 'Radio 24/7 - MewWorld',
+      smallImageKey: 'playing',
+      smallImageText: 'En vivo',
+      buttons: [
+        { label: 'Escuchar Radio', url: 'https://mewworld.net/inicio' },
+      ],
+      instance: false,
+    };
+    rpcClient.setActivity(activity).catch(() => {});
+  } catch (e) { /* ignore */ }
+}
+
+// Listen for song updates from the web page
+ipcMain.on('update-song', (event, data) => {
+  if (data && data.title) {
+    updatePresence(data.title, data.artist);
+    // Also update mini player if open
+    if (miniPlayerWindow && !miniPlayerWindow.isDestroyed()) {
+      miniPlayerWindow.webContents.send('song-update', data);
+    }
+  }
+});
+
+// ==================== ALWAYS ON TOP (Picture-in-Picture) ====================
+
+ipcMain.on('toggle-always-on-top', () => {
+  if (mainWindow) {
+    const isOnTop = mainWindow.isAlwaysOnTop();
+    mainWindow.setAlwaysOnTop(!isOnTop);
+  }
+});
+
 // ==================== APP LIFECYCLE ====================
 
 app.whenReady().then(() => {
@@ -378,6 +458,7 @@ app.whenReady().then(() => {
   createTray();
   createWindow();
   registerShortcuts();
+  connectDiscordRPC();
 
   // Check for updates 5 seconds after launch (silent)
   setTimeout(() => checkForUpdates(false), 5000);
