@@ -26,21 +26,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Electron app (unsigned)
+      - name: Build Electron app
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload unsigned artifact
+      - name: Upload build artifact
         id: upload-unsigned
         uses: actions/upload-artifact@v4
         with:
-          name: unsigned-installer
+          name: windows-installer
           path: |
             dist/*.exe
+            dist/latest.yml
+            dist/*.blockmap
 
-      - name: Submit to SignPath for signing
+      - name: Try SignPath signing
         id: signpath
+        continue-on-error: true
         uses: signpath/github-action-submit-signing-request@v1
         with:
           api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
@@ -52,11 +55,11 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: ./signed
 
-      - name: Create GitHub Release with signed installer
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            signed/*.exe
+            dist/*.exe
             dist/latest.yml
             dist/*.blockmap
           generate_release_notes: true
