@@ -9,6 +9,8 @@ const APP_URL = 'https://mewworld.net/inicio';
 const APP_DOMAIN = 'mewworld.net';
 const DISCORD_CLIENT_ID = '1472533119881052222';
 
+app.setAppUserModelId('MewWorld');
+
 let mainWindow = null;
 let splashWindow = null;
 let miniPlayerWindow = null;
