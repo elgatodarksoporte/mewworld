@@ -1,6 +1,6 @@
 {
   "name": "radio-247",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Radio 24/7 - Desktop App",
   "repository": "https://github.com/elgatodarksoporte/mewworld",
   "author": "elgatodarksoporte",
@@ -24,6 +24,7 @@
     "files": [
       "main.js",
       "preload.js",
+      "titlebar.html",
       "splash.html",
       "offline.html",
       "mini-player.html",

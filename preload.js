@@ -15,6 +15,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Title bar color (sync with theme)
   updateTitleBar: (color, symbolColor) => ipcRenderer.send('update-titlebar', { color, symbolColor }),
 
+  // Window controls (custom title bar)
+  windowControl: (action) => ipcRenderer.send('window-control', action),
+
   // Platform detection
   isElectron: true,
 });
