@@ -11,6 +11,8 @@ const DISCORD_CLIENT_ID = '1472533119881052222';
 
 app.setAppUserModelId('MewWorld');
 
+const APP_ICON = nativeImage.createFromPath(path.join(__dirname, 'icon.png'));
+
 let mainWindow = null;
 let splashWindow = null;
 let miniPlayerWindow = null;
@@ -103,7 +105,7 @@ function createSplash() {
     transparent: true,
     resizable: false,
     alwaysOnTop: true,
-    icon: path.join(__dirname, 'icon.ico'),
+    icon: APP_ICON,
     webPreferences: { nodeIntegration: false, contextIsolation: true },
   });
   splashWindow.loadFile(path.join(__dirname, 'splash.html'));
@@ -125,7 +127,7 @@ function createWindow() {
     title: 'MewWorld',
     show: false,
     titleBarStyle: 'hidden',
-    icon: path.join(__dirname, 'icon.ico'),
+    icon: APP_ICON,
     autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: false,
@@ -219,7 +221,7 @@ function createMiniPlayer() {
     resizable: false,
     alwaysOnTop: true,
     skipTaskbar: true,
-    icon: path.join(__dirname, 'icon.ico'),
+    icon: APP_ICON,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

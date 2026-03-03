@@ -1,6 +1,6 @@
 {
   "name": "radio-247",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "description": "Radio 24/7 - Desktop App",
   "repository": "https://github.com/elgatodarksoporte/mewworld",
   "author": "elgatodarksoporte",
@@ -30,12 +30,13 @@
       "mini-player.html",
       "icon.png",
       "icon.ico",
+      "icon-512.png",
       "installer-sidebar.bmp",
       "installer-header.bmp"
     ],
     "win": {
       "target": "nsis",
-      "icon": "icon.ico",
+      "icon": "icon-512.png",
       "signAndEditExecutable": false
     },
     "nsis": {
