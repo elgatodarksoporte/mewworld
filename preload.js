@@ -20,4 +20,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Platform detection
   isElectron: true,
+  hasNativeControls: true,
 });
