@@ -122,7 +122,12 @@ function createWindow() {
     minHeight: 600,
     title: 'MewWorld',
     show: false,
-    frame: false,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#0C111D',
+      symbolColor: '#ffffff',
+      height: 36,
+    },
     icon: path.join(__dirname, 'icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
@@ -145,22 +150,6 @@ function createWindow() {
 
   // When page finishes loading, show main window and close splash
   mainWindow.webContents.on('did-finish-load', () => {
-    // Inject titlebar CSS as backup (in case web app CSS didn't load yet)
-    mainWindow.webContents.insertCSS(`
-      .electron-titlebar, .electron-titlebar * { transition: none !important; }
-      .electron-titlebar {
-        position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important;
-        width: 100% !important; height: 32px !important; box-sizing: border-box !important;
-        z-index: 99999 !important; -webkit-app-region: drag; app-region: drag;
-        display: flex !important; align-items: center !important; padding-left: 12px !important;
-        user-select: none !important;
-      }
-      .etb-btn { -webkit-app-region: no-drag; app-region: no-drag; }
-      body.has-electron-titlebar { padding-top: 32px !important; }
-      body.has-electron-titlebar .sidebar { top: 32px !important; height: calc(100vh - 32px) !important; }
-      body.has-electron-titlebar .main-wrapper { height: calc(100vh - 32px) !important; }
-    `).catch(() => {});
-
     if (splashWindow && !splashWindow.isDestroyed()) {
       splashWindow.close();
       splashWindow = null;
@@ -479,17 +468,16 @@ ipcMain.on('toggle-always-on-top', () => {
   }
 });
 
-// ==================== WINDOW CONTROLS (custom title bar) ====================
+// ==================== TITLE BAR COLOR (sync with theme) ====================
 
-ipcMain.on('window-control', (event, action) => {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
-  switch (action) {
-    case 'minimize': mainWindow.minimize(); break;
-    case 'maximize':
-      if (mainWindow.isMaximized()) mainWindow.unmaximize();
-      else mainWindow.maximize();
-      break;
-    case 'close': mainWindow.close(); break;
+ipcMain.on('update-titlebar', (event, { color, symbolColor }) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    try {
+      mainWindow.setTitleBarOverlay({
+        color: color || '#0C111D',
+        symbolColor: symbolColor || '#ffffff',
+      });
+    } catch (e) { /* ignore - not supported on all platforms */ }
   }
 });
 
