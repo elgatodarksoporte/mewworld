@@ -1,0 +1,45 @@
+{
+  "name": "radio-247",
+  "version": "1.0.0",
+  "description": "Radio 24/7 - Desktop App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^3.0.1",
+    "sharp": "^0.34.5"
+  },
+  "build": {
+    "appId": "com.mewworld.radio247",
+    "productName": "Radio 247",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "splash.html",
+      "offline.html",
+      "mini-player.html",
+      "icon.png",
+      "icon.ico"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerSidebar": null
+    }
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.3"
+  }
+}
