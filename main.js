@@ -123,11 +123,6 @@ function createWindow() {
     title: 'MewWorld',
     show: false,
     titleBarStyle: 'hidden',
-    titleBarOverlay: {
-      color: '#0C111D',
-      symbolColor: '#ffffff',
-      height: 36,
-    },
     icon: path.join(__dirname, 'icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
@@ -468,16 +463,17 @@ ipcMain.on('toggle-always-on-top', () => {
   }
 });
 
-// ==================== TITLE BAR COLOR (sync with theme) ====================
+// ==================== WINDOW CONTROLS (custom title bar) ====================
 
-ipcMain.on('update-titlebar', (event, { color, symbolColor }) => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    try {
-      mainWindow.setTitleBarOverlay({
-        color: color || '#0C111D',
-        symbolColor: symbolColor || '#ffffff',
-      });
-    } catch (e) { /* ignore - not supported on all platforms */ }
+ipcMain.on('window-control', (event, action) => {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  switch (action) {
+    case 'minimize': mainWindow.minimize(); break;
+    case 'maximize':
+      if (mainWindow.isMaximized()) mainWindow.unmaximize();
+      else mainWindow.maximize();
+      break;
+    case 'close': mainWindow.close(); break;
   }
 });
 
