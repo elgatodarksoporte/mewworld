@@ -18,6 +18,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Window controls (custom title bar)
   windowControl: (action) => ipcRenderer.send('window-control', action),
 
+  // Open URL in default system browser
+  openExternal: (url) => ipcRenderer.send('open-external', url),
+
   // Platform detection
   isElectron: true,
   hasNativeControls: true,

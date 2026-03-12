@@ -76,7 +76,7 @@ async function generate() {
   const sidebarText = `
     <svg width="${sidebarWidth}" height="${sidebarHeight}">
       <rect width="${sidebarWidth}" height="${sidebarHeight}" fill="rgb(${bgColor.r},${bgColor.g},${bgColor.b})"/>
-      <text x="${sidebarWidth / 2}" y="240" text-anchor="middle" fill="#ff6b1a" font-family="Arial,sans-serif" font-weight="bold" font-size="16">Radio 24/7</text>
+      <text x="${sidebarWidth / 2}" y="240" text-anchor="middle" fill="#ff6b1a" font-family="Arial,sans-serif" font-weight="bold" font-size="16">MewWorld</text>
       <text x="${sidebarWidth / 2}" y="260" text-anchor="middle" fill="#888888" font-family="Arial,sans-serif" font-size="10">Desktop App</text>
     </svg>
   `;

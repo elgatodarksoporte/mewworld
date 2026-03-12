@@ -144,6 +144,43 @@ function createWindow() {
     mainWindow.maximize();
   }
 
+  // Allow streaming iframes (Twitch player + chat, YouTube, Kick) to load inside the app
+  mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+    const responseHeaders = { ...details.responseHeaders };
+    const url = details.url.toLowerCase();
+
+    // Remove X-Frame-Options and restrictive CSP for embed players & Twitch chat
+    if (url.includes('player.twitch.tv') || url.includes('twitch.tv/embed') || url.includes('youtube.com/embed') || url.includes('player.kick.com')) {
+      delete responseHeaders['X-Frame-Options'];
+      delete responseHeaders['x-frame-options'];
+      const cspKeys = Object.keys(responseHeaders).filter(k => k.toLowerCase() === 'content-security-policy');
+      cspKeys.forEach(k => {
+        if (responseHeaders[k]) {
+          responseHeaders[k] = responseHeaders[k].map(v =>
+            v.replace(/frame-ancestors[^;]*/gi, `frame-ancestors *`)
+          );
+        }
+      });
+    }
+
+    // Allow third-party cookies for Twitch (needed for chat login inside iframe)
+    if (url.includes('twitch.tv') || url.includes('jtvnw.net') || url.includes('twitch.amazon.com')) {
+      const cookieKeys = Object.keys(responseHeaders).filter(k => k.toLowerCase() === 'set-cookie');
+      cookieKeys.forEach(k => {
+        if (responseHeaders[k]) {
+          responseHeaders[k] = responseHeaders[k].map(cookie => {
+            if (!/samesite/i.test(cookie)) {
+              return cookie + '; SameSite=None; Secure';
+            }
+            return cookie.replace(/SameSite=(Lax|Strict)/gi, 'SameSite=None');
+          });
+        }
+      });
+    }
+
+    callback({ responseHeaders });
+  });
+
   // Load the app
   mainWindow.loadURL(APP_URL);
 
@@ -166,11 +203,13 @@ function createWindow() {
     mainWindow.show();
   });
 
-  // Open external links in system browser
+  // Open external links in system browser (allow Twitch auth popups for chat login)
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     try {
       const parsedUrl = new URL(url);
-      if (parsedUrl.hostname === APP_DOMAIN || parsedUrl.hostname === 'discord.com') {
+      const host = parsedUrl.hostname.toLowerCase();
+      if (host === APP_DOMAIN || host === 'discord.com' ||
+          host.endsWith('twitch.tv') || host.endsWith('twitch.amazon.com')) {
         return { action: 'allow' };
       }
     } catch (e) { /* ignore */ }
@@ -178,11 +217,13 @@ function createWindow() {
     return { action: 'deny' };
   });
 
-  // Handle navigation to external domains
+  // Handle navigation to external domains (allow Twitch auth for chat login)
   mainWindow.webContents.on('will-navigate', (event, url) => {
     try {
       const parsedUrl = new URL(url);
-      if (parsedUrl.hostname === APP_DOMAIN || parsedUrl.hostname === 'discord.com') {
+      const host = parsedUrl.hostname.toLowerCase();
+      if (host === APP_DOMAIN || host === 'discord.com' ||
+          host.endsWith('twitch.tv') || host.endsWith('twitch.amazon.com')) {
         return;
       }
       event.preventDefault();
@@ -268,7 +309,7 @@ function createTray() {
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Abrir Radio 24/7',
+      label: 'Abrir MewWorld',
       click: () => {
         if (mainWindow) {
           mainWindow.show();
@@ -325,7 +366,7 @@ function createTray() {
     },
   ]);
 
-  tray.setToolTip('Radio 24/7');
+  tray.setToolTip('MewWorld');
   tray.setContextMenu(contextMenu);
 
   // Click on tray icon to show window
@@ -431,11 +472,11 @@ function updatePresence(songTitle, songArtist) {
   if (!rpcReady || !rpcClient) return;
   try {
     const activity = {
-      details: songTitle || 'Radio 24/7',
+      details: songTitle || 'MewWorld Radio',
       state: songArtist || 'Escuchando musica',
       startTimestamp: Math.floor(Date.now() / 1000),
       largeImageKey: 'radio_icon',
-      largeImageText: 'Radio 24/7 - MewWorld',
+      largeImageText: 'MewWorld',
       smallImageKey: 'playing',
       smallImageText: 'En vivo',
       buttons: [
@@ -481,6 +522,14 @@ ipcMain.on('window-control', (event, action) => {
   }
 });
 
+
+// ==================== OPEN EXTERNAL URL ====================
+
+ipcMain.on('open-external', (event, url) => {
+  if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
+    shell.openExternal(url);
+  }
+});
 
 // ==================== APP LIFECYCLE ====================
 
