@@ -380,31 +380,34 @@ function createTray() {
 
 // ==================== AUTO-UPDATER ====================
 
+let isManualUpdateCheck = false;
+
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+
+autoUpdater.on('update-available', (info) => {
+  showNotification('Actualizacion disponible', `Version ${info.version} encontrada. Descargando...`);
+});
+
+autoUpdater.on('update-not-available', () => {
+  if (isManualUpdateCheck) {
+    showNotification('Sin actualizaciones', 'Ya tienes la version mas reciente.');
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  showNotification('Actualizacion lista', `Version ${info.version} descargada. Se instalara al reiniciar.`);
+});
+
+autoUpdater.on('error', () => {
+  if (isManualUpdateCheck) {
+    showNotification('Error de actualizacion', 'No se pudo verificar actualizaciones.');
+  }
+});
+
 function checkForUpdates(manual = false) {
-  autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
-
-  autoUpdater.on('update-available', (info) => {
-    showNotification('Actualizacion disponible', `Version ${info.version} encontrada. Descargando...`);
-  });
-
-  autoUpdater.on('update-not-available', () => {
-    if (manual) {
-      showNotification('Sin actualizaciones', 'Ya tienes la version mas reciente.');
-    }
-  });
-
-  autoUpdater.on('update-downloaded', (info) => {
-    showNotification('Actualizacion lista', `Version ${info.version} descargada. Se instalara al reiniciar.`);
-  });
-
-  autoUpdater.on('error', () => {
-    if (manual) {
-      showNotification('Error de actualizacion', 'No se pudo verificar actualizaciones.');
-    }
-  });
-
-  autoUpdater.checkForUpdatesAndNotify().catch(() => {});
+  isManualUpdateCheck = manual;
+  autoUpdater.checkForUpdates().catch(() => {});
 }
 
 // ==================== NOTIFICATIONS ====================
